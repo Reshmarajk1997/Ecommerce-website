@@ -1,4 +1,5 @@
 import React from 'react'
+import UserProductListPage from '../../product/pages/user/UserProductListPage'
 
 
 
@@ -6,8 +7,8 @@ import React from 'react'
  const HomePage = () => {
   return (
     <div>
-        {/* <ProductCard/> */}
-        ProductCard
+        
+        <UserProductListPage/>
     </div>
   )
 }

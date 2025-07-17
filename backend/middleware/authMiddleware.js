@@ -20,6 +20,27 @@ const authenticateToken = async(req,res,next)=>{
     }
 };
 
+
+const isUser = async(req,res,next)=>{
+    try {
+        const user = await User.findById(req.userId);
+
+        if(!user){
+           return res.status(400).json({message:"User not found"})
+        }
+
+         if (user.isAdmin) {
+      return res.status(403).json({ message: "Access restricted to regular users" });
+    }
+
+    next();
+    } catch (error) {
+         return res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
+
+
 const isAdmin = async(req,res,next)=>{
     try {
         const user = await User.findById(req.userId);
@@ -33,4 +54,4 @@ const isAdmin = async(req,res,next)=>{
     }
 }
 
-export default {authenticateToken, isAdmin};
+export default {authenticateToken, isAdmin, isUser};

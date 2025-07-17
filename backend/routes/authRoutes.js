@@ -1,7 +1,7 @@
 import express from 'express'
 import {registerUser,loginUser,getUserData, adminLogin} from '../controllers/authControllers.js'
 import authMiddleware from '../middleware/authMiddleware.js';
-const {authenticateToken} = authMiddleware
+const {authenticateToken,isUser,isAdmin} = authMiddleware
 
 const router = express.Router();
 

@@ -1,48 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import debounce from "lodash.debounce";
-import { addProduct, updateProductById, checkProductExists } from "../../services/admin/productServices";
-
-// const debouncedCheck = debounce(async (name, brand, setProductExists,currentId) => {
-
-//  try {
-//     const response = await checkProductExists(name, brand,currentId);
-//     if (response.exists) {
-      
-//       if (currentId && response.productId === currentId) {
-//         setProductExists(false); 
-//       } else {
-//         alert("A product with this name and brand already exists.");
-//         setProductExists(true);
-//       }
-//     } else {
-//       setProductExists(false);
-//     }
-//   } catch (err) {
-//     console.error("Error checking product existence:", err);
-//   }
-// }, 1000);
-
-
-const debouncedCheck = debounce(async (name, brand, setProductExists) => {
-  try {
-    const res = await checkProductExists(name, brand);
-    if (res.exists) {
-      setProductExists(true);
-    } else {
-      setProductExists(false);
-    }
-  } catch (err) {
-    console.error("Error checking product existence:", err);
-    setProductExists(false);
-  }
-}, 1000);
-
-// Inside useEffect, call debouncedCheck with current product id for edit mode:
-
-
+import {
+  addProduct,
+  updateProductById,
+  checkProductExists,
+} from "../../services/admin/productServices";
 
 const useProductForm = (initialData = null) => {
-  // Initialize with empty form by default
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -55,7 +19,7 @@ const useProductForm = (initialData = null) => {
     imgUrl: "",
     category: "",
     colors: [{ colorName: "", imgUrl: "" }],
-    storageVariants: [{ storage: "", stock: "" }],
+    variations: [{ storage: "", stock: "", price: "", discountPercentage: "" }],
   });
 
   const [imgFile, setImgFile] = useState(null);
@@ -66,67 +30,68 @@ const useProductForm = (initialData = null) => {
 
   const [productExists, setProductExists] = useState(false);
 
-  // Update form and previews whenever initialData changes (e.g. after fetch)
-  // useEffect(() => {
-  //   if (initialData) {
-  //     setForm(initialData);
-  //     setImgPreview(initialData.imgUrl || null);
-  //     setColorImgFiles(initialData.colors ? initialData.colors.map(() => null) : []);
-  //     setColorImgPreview(initialData.colors ? initialData.colors.map(c => c.imgUrl) : []);
-  //   }
-  // }, [initialData]);
 
+
+  const debouncedCheck = useCallback(
+    debounce(async (name, brand) => {
+      try {
+        const res = await checkProductExists(name, brand);
+        setProductExists(res.exists);
+      } catch (err) {
+        console.error("Error checking product existence:", err);
+        setProductExists(false);
+      }
+    }, 600), // 600ms delay
+    []
+  );
 
   useEffect(() => {
-  if (initialData) {
-    setForm({
-      ...initialData,
-      colors: Array.isArray(initialData.colors) && initialData.colors.length > 0
-        ? initialData.colors
-        : [{ colorName: "", imgUrl: "" }],
-      storageVariants: Array.isArray(initialData.storageVariants) && initialData.storageVariants.length > 0
-        ? initialData.storageVariants
-        : [{ storage: "", stock: "" }],
-    });
+    if (initialData) {
+      setForm({
+        ...initialData,
+        colors:
+          Array.isArray(initialData.colors) && initialData.colors.length > 0
+            ? initialData.colors
+            : [{ colorName: "", imgUrl: "" }],
+      
 
-    setImgPreview(initialData.imgUrl || null);
-    setColorImgFiles(
-      Array.isArray(initialData.colors)
-        ? initialData.colors.map(() => null)
-        : [null]
-    );
-    setColorImgPreview(
-      Array.isArray(initialData.colors)
-        ? initialData.colors.map((c) => c.imgUrl)
-        : [null]
-    );
-  }
-}, [initialData]);
+        variations:
+          Array.isArray(initialData.variations) &&
+          initialData.variations.length > 0
+            ? initialData.variations.map(v => ({
+            _id: v._id,      // Keep _id for existing variations
+            storage: v.storage,
+            stock: v.stock,
+            price: v.price,
+            discountPercentage: v.discountPercentage,
+          }))
+            : [{ storage: "", stock: "", price: "", discountPercentage: "" }],
+      });
 
-
-
-// useEffect(() => {
-//   if (form.name.trim() && form.brand.trim()) {
-    
-//     if (!initialData?._id) {
-//       debouncedCheck(form.name.trim(), form.brand.trim(), setProductExists);
-//     }
-//   }
-// }, [form.name, form.brand]);
-
-useEffect(() => {
-  const name = form?.name?.trim?.() || "";
-  const brand = form?.brand?.trim?.() || "";
-
-  if (name && brand) {
-    // only check if it's **add mode**
-    if (!initialData?._id) {
-      debouncedCheck(name, brand, setProductExists);
+      setImgPreview(initialData.imgUrl || null);
+      setColorImgFiles(
+        Array.isArray(initialData.colors)
+          ? initialData.colors.map(() => null)
+          : [null]
+      );
+      setColorImgPreview(
+        Array.isArray(initialData.colors)
+          ? initialData.colors.map((c) => c.imgUrl)
+          : [null]
+      );
     }
-  }
-}, [form.name, form.brand]);
+  }, [initialData]);
 
+  useEffect(() => {
+    const name = form?.name?.trim?.() || "";
+    const brand = form?.brand?.trim?.() || "";
 
+    if (name && brand) {
+      if (!initialData?._id) {
+        debouncedCheck(name, brand);
+      }
+    }
+  }, [form.name, form.brand, initialData?._id, debouncedCheck]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -138,10 +103,10 @@ useEffect(() => {
     setForm({ ...form, colors: updated });
   };
 
-  const handleStorageChange = (index, e) => {
-    const updated = [...form.storageVariants];
+  const handleVariationChange = (index, e) => {
+    const updated = [...form.variations];
     updated[index][e.target.name] = e.target.value;
-    setForm({ ...form, storageVariants: updated });
+    setForm({ ...form, variations: updated });
   };
 
   const addColor = () => {
@@ -153,10 +118,13 @@ useEffect(() => {
     setColorImgPreview([...colorImgPreview, null]);
   };
 
-  const addStorage = () => {
+  const addVariation = () => {
     setForm({
       ...form,
-      storageVariants: [...form.storageVariants, { storage: "", stock: "" }],
+      variations: [
+        ...form.variations,
+        { storage: "", stock: "", price: "", discountPercentage: "" },
+      ],
     });
   };
 
@@ -194,18 +162,22 @@ useEffect(() => {
     setColorImgPreview(updatedPreviews);
   };
 
-  const removeStorage = (index) => {
-    const updatedStorage = [...form.storageVariants];
-    updatedStorage.splice(index, 1);
-    setForm({ ...form, storageVariants: updatedStorage });
+  const removeVariation = (index) => {
+    const updated = [...form.variations];
+    updated.splice(index, 1);
+    setForm({ ...form, variations: updated });
   };
 
   const resetForm = () => {
     if (initialData) {
       setForm(initialData);
       setImgPreview(initialData.imgUrl || null);
-      setColorImgFiles(initialData.colors ? initialData.colors.map(() => null) : []);
-      setColorImgPreview(initialData.colors ? initialData.colors.map(c => c.imgUrl) : []);
+      setColorImgFiles(
+        initialData.colors ? initialData.colors.map(() => null) : []
+      );
+      setColorImgPreview(
+        initialData.colors ? initialData.colors.map((c) => c.imgUrl) : []
+      );
     } else {
       setForm({
         name: "",
@@ -213,13 +185,14 @@ useEffect(() => {
         brand: "",
         operatingSystem: "",
         screenSize: "",
-        price: "",
-        discountPercentage: "",
-        priceAfterDiscount: "",
+
         imgUrl: "",
         category: "",
         colors: [{ colorName: "", imgUrl: "" }],
-        storageVariants: [{ storage: "", stock: "" }],
+
+        variations: [
+          { storage: "", stock: "", price: "", discountPercentage: "" },
+        ],
       });
       setImgPreview(null);
       setColorImgFiles([]);
@@ -233,7 +206,9 @@ useEffect(() => {
     e.preventDefault();
 
     if (productExists) {
-      alert("Cannot submit. A product with this name and brand already exists.");
+      alert(
+        "Cannot submit. A product with this name and brand already exists."
+      );
       return;
     }
 
@@ -243,10 +218,20 @@ useEffect(() => {
         price: Number(form.price),
         discountPercentage: Number(form.discountPercentage),
         priceAfterDiscount: Number(form.priceAfterDiscount),
-        storageVariants: form.storageVariants.map((s) => ({
-          storage: s.storage,
-          stock: Number(s.stock),
-        })),
+
+        variations: form.variations.map((v) => {
+          const price = Number(v.price);
+          const discount = Number(v.discountPercentage);
+          const stock = Number(v.stock);
+          return {
+            _id: v._id,
+            storage: v.storage,
+            stock,
+            price,
+            discountPercentage: discount,
+            priceAfterDiscount: +(price - (price * discount) / 100).toFixed(2),
+          };
+        }),
       };
 
       const formData = new FormData();
@@ -283,18 +268,21 @@ useEffect(() => {
     form,
     handleChange,
     handleColorChange,
-    handleStorageChange,
+
     addColor,
-    addStorage,
+
     handleSubmit,
     handleFileChange,
     handleColorFileChange,
     imgPreview,
     colorImgPreview,
     removeColor,
-    removeStorage,
+
     resetForm,
-    productExists
+    productExists,
+    handleVariationChange,
+    addVariation,
+    removeVariation,
   };
 };
 

@@ -7,6 +7,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({children})=>{
     const [user,setUser] = useState(null);
+
+    
+
     const [isInitialized, setIsInitialized] = useState(false);
 
 
@@ -14,6 +17,7 @@ export const AuthProvider = ({children})=>{
 
     useEffect(()=>{
         const token = getToken();
+        
         if(token && !isInitialized ){
             const fetchUserData = async()=>{
                 try {
@@ -33,6 +37,7 @@ export const AuthProvider = ({children})=>{
         }else {
             setIsInitialized(true);
           }
+          
     },[isInitialized]);
 
     const loginUser = (userData)=>{

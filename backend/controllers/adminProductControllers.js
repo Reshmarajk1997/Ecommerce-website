@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 import cloudinary from "../config/cloudinary.js";
 import { json } from "express";
 import { buildProductQuery } from "../utils/buildProductQuery.js";
@@ -13,27 +14,12 @@ const addProduct = async (req, res) => {
       brand,
       operatingSystem,
       screenSize,
-      price,
-      discountPercentage,
-      priceAfterDiscount,
       category,
       colors,
-      storageVariants,
+      variations,
     } = JSON.parse(req.body.product);
 
     console.log("req.body in backennd is ", req.body);
-
-    const existingProduct = await Product.findOne({
-      name: { $regex: `^${name.trim()}$`, $options: "i" },
-      brand: { $regex: `^${brand.trim()}$`, $options: "i" },
-    });
-
-    if (existingProduct) {
-      return res.status(409).json({
-        message: "A product with this name and brand already exists.",
-        productId: existingProduct._id,
-      });
-    }
 
     if (
       !name ||
@@ -42,17 +28,46 @@ const addProduct = async (req, res) => {
       !category ||
       !operatingSystem ||
       !screenSize ||
-      !price == null ||
-      !discountPercentage == null ||
-      !priceAfterDiscount == null ||
       !colors ||
       !Array.isArray(colors) ||
-      !storageVariants ||
-      !Array.isArray(storageVariants)
+      !variations ||
+      !Array.isArray(variations)
     ) {
       return res.status(400).json({
         message:
           "All fields are required and colors, storageVariants must be arrays.",
+      });
+    }
+
+    const trimmedName = name.trim();
+    const trimmedBrand = brand.trim();
+    const normalizedStorages = variations
+      .map((v) => v.storage?.trim())
+      .filter(Boolean);
+
+    // const existingProduct = await Product.findOne({
+    //       name: { $regex: `^${trimmedName}$`, $options: "i" },
+    //       brand: { $regex: `^${trimmedBrand}$`, $options: "i" },
+    //       variations: {
+    //         $elemMatch: {
+    //           storage: {
+    //             $in: normalizedStorages.map(
+    //               (s) => new RegExp(`^${s}$`, "i")
+    //             ),
+    //           },
+    //         },
+    //       },
+    //     });
+
+    const existingProduct = await Product.findOne({
+      name: { $regex: `^${trimmedName}$`, $options: "i" },
+      brand: { $regex: `^${trimmedBrand}$`, $options: "i" },
+    });
+
+    if (existingProduct) {
+      return res.status(409).json({
+        message: "A product with the same name and brand already exists.",
+        productId: existingProduct._id,
       });
     }
 
@@ -65,12 +80,6 @@ const addProduct = async (req, res) => {
     if (!["smartphone", "tablet"].includes(category)) {
       return res.status(400).json({
         message: "Operating system must be 'smartphone' or 'tablet'.",
-      });
-    }
-
-    if (discountPercentage < 0 || discountPercentage > 100) {
-      return res.status(400).json({
-        message: "Discount percentage must be between 0 and 100.",
       });
     }
 
@@ -122,29 +131,51 @@ const addProduct = async (req, res) => {
       })
     );
 
-    const validStorage = storageVariants.map((s) => {
-      const stockNumber = Number(s.stock);
-      if (!s.storage || isNaN(stockNumber) || stockNumber < 0) {
-        throw new Error(
-          "Each storage variant must have a valid storage string and non-negative stock."
-        );
+    const validatedVariations = variations.map((v) => {
+      const price = Number(v.price);
+      const discount = Number(v.discountPercentage);
+      const stock = Number(v.stock);
+
+      if (!v.storage || isNaN(price) || isNaN(discount) || isNaN(stock)) {
+        throw new Error("Invalid variation values.");
       }
-      return { ...s, stock: stockNumber };
+
+      if (discount < 0 || discount > 100) {
+        throw new Error("Discount percentage must be between 0 and 100.");
+      }
+
+      return {
+        storage: v.storage,
+        stock,
+        price,
+        discountPercentage: discount,
+        priceAfterDiscount: +(price - (price * discount) / 100).toFixed(2),
+      };
     });
 
+    const minPriceAfterDiscount = Math.min(
+      ...validatedVariations.map((v) => v.priceAfterDiscount)
+    );
+
+    const maxDiscountPercentage = Math.max(
+      ...validatedVariations.map((v) => v.discountPercentage)
+    );
+
+    const totalStock = validatedVariations.reduce((sum, v) => sum + v.stock, 0);
+
     const newProduct = new Product({
-      name,
-      brand,
+      name: trimmedName,
+      brand: trimmedBrand,
       description,
-      price,
       category,
-      discountPercentage,
-      priceAfterDiscount,
       imgUrl,
       operatingSystem,
       screenSize,
       colors: updatedColors,
-      storageVariants: validStorage,
+      variations: validatedVariations,
+      minPriceAfterDiscount,
+      maxDiscountPercentage,
+      totalStock,
     });
 
     await newProduct.save();
@@ -159,19 +190,26 @@ const addProduct = async (req, res) => {
 
 const checkProductExists = async (req, res) => {
   try {
-    const { name, brand } = req.query;
+    const name = req.query.name?.trim();
+    const brand = req.query.brand?.trim();
 
     if (!name || !brand) {
-      return res.status(400).json({ message: "Name and brand are required" });
+      return res.status(400).json({
+        message: "Name, brand are required",
+      });
     }
 
-    const existing = await Product.findOne({
-      name: { $regex: `^${name.trim()}$`, $options: "i" },
-      brand: { $regex: `^${brand.trim()}$`, $options: "i" },
+    const existingProduct = await Product.findOne({
+      name: { $regex: `^${name}$`, $options: "i" },
+      brand: { $regex: `^${brand}$`, $options: "i" },
     });
 
-    if (existing) {
-      return res.json({ exists: true, productId: existing._id });
+    if (existingProduct) {
+      return res.status(200).json({
+        exists: true,
+        message: "A product with the same name and brand already exists.",
+        productId: existingProduct._id,
+      });
     }
 
     res.json({ exists: false });
@@ -195,9 +233,12 @@ const getAllProducts = async (req, res) => {
 
     const query = buildProductQuery({ search, category });
 
+    query.variations = { $exists: true, $ne: [] };
+
     const total = await Product.countDocuments(query);
 
     const products = await Product.find(query)
+    .collation({locale:"en",strength:2})
       .sort({ [sortBy]: order })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -216,6 +257,35 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+const getAllUsers = async(req,res)=>{
+  try {
+    const page = Math.max(1, parseInt(req.query.page)) || 1;
+    const limit = Math.max(1, parseInt(req.query.limit)) || 10;
+
+    const total = await User.countDocuments();
+
+
+    const users = await User.find()
+      .select("-password")
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+      res.json({
+        success: true,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+        users,
+      });
+
+    
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 
 const deleteProductById = async (req, res) => {
   try {
@@ -254,56 +324,18 @@ const updateProductById = async (req, res) => {
 
     console.log("existing product is", existingProduct);
 
-    const {
-      name,
-      description,
-      brand,
-      operatingSystem,
-      screenSize,
-      price,
-      discountPercentage,
-      priceAfterDiscount,
-      category,
-      colors,
-      storageVariants,
-    } = JSON.parse(req.body.product);
+    const { description, colors, variations } = JSON.parse(req.body.product);
 
     if (
-      !name ||
       !description ||
-      !brand ||
-      !category ||
-      !operatingSystem ||
-      !screenSize ||
-      price == null ||
-      discountPercentage == null ||
-      priceAfterDiscount == null ||
       !colors ||
       !Array.isArray(colors) ||
-      !storageVariants ||
-      !Array.isArray(storageVariants)
+      !variations ||
+      !Array.isArray(variations)
     ) {
       return res.status(400).json({
         message:
-          "All fields are required and colors, storageVariants must be arrays.",
-      });
-    }
-
-    if (!["Android", "iOS", "Others"].includes(operatingSystem)) {
-      return res.status(400).json({
-        message: "Operating system must be 'Android', 'iOS' or 'Others'.",
-      });
-    }
-
-    if (!["smartphone", "tablet"].includes(category)) {
-      return res.status(400).json({
-        message: "Category must be 'smartphone' or 'tablet'.",
-      });
-    }
-
-    if (discountPercentage < 0 || discountPercentage > 100) {
-      return res.status(400).json({
-        message: "Discount percentage must be between 0 and 100.",
+          "Description, colors, and variations are required and must be arrays.",
       });
     }
 
@@ -326,6 +358,15 @@ const updateProductById = async (req, res) => {
       colors.map(async (color, index) => {
         if (!color.colorName) {
           throw new Error("Each color must have a valid colorName.");
+        }
+
+        const isDuplicate = existingProduct.colors.find(
+          (c) =>
+            c.colorName.toLowerCase() === color.colorName.toLowerCase() &&
+            (!color._id || c._id.toString() !== color._id)
+        );
+        if (isDuplicate) {
+          throw new Error(`Color "${color.colorName}" already exists.`);
         }
 
         const fileKey = `colorImage_${index}`;
@@ -357,28 +398,80 @@ const updateProductById = async (req, res) => {
       })
     );
 
-    const validStorage = storageVariants.map((s) => {
-      const stockNumber = Number(s.stock);
-      if (!s.storage || isNaN(stockNumber) || stockNumber < 0) {
-        throw new Error(
-          "Each storage variant must have a valid storage string and non-negative stock."
-        );
-      }
-      return { ...s, stock: stockNumber };
-    });
+   
 
-    existingProduct.name = name;
-    existingProduct.brand = brand;
+
+
+    const existingVariations = existingProduct.variations;
+
+    // 1. Convert frontend variations to map
+    const incomingMap = new Map();
+    const updatedVariations = [];
+
+    for (let v of variations) {
+      const storage = v.storage?.trim().toLowerCase();
+
+      if (!storage || isNaN(v.price) || isNaN(v.discountPercentage) || isNaN(v.stock)) {
+        throw new Error("Each variation must have valid storage, price, discount, and stock.");
+      }
+
+      if (v.discountPercentage < 0 || v.discountPercentage > 100) {
+        throw new Error("Discount percentage must be between 0 and 100.");
+      }
+
+      const priceAfterDiscount = +(v.price - (v.price * v.discountPercentage) / 100).toFixed(2);
+
+      incomingMap.set(v._id ?? null, {
+        _id: v._id,
+        storage: v.storage.trim(),
+        price: v.price,
+        stock: v.stock,
+        discountPercentage: v.discountPercentage,
+        priceAfterDiscount,
+      });
+    }
+
+    // 2. Build the final variations array:
+    for (let v of existingVariations) {
+      const match = [...incomingMap.values()].find(
+        (iv) => iv._id?.toString() === v._id.toString()
+      );
+
+      if (match) {
+        // updated variation
+        updatedVariations.push({ ...match });
+        incomingMap.delete(match._id);
+      }
+    }
+
+    // 3. Add new variations (with no _id)
+    const newVariations = [...incomingMap.values()].filter((v) => !v._id);
+    for (let v of newVariations) {
+      // avoid duplicate storage in updated list
+      if (
+        updatedVariations.some((ex) => ex.storage.toLowerCase() === v.storage.toLowerCase())
+      ) {
+        throw new Error(`Storage "${v.storage}" already exists.`);
+      }
+
+      updatedVariations.push(v);
+    }
+
+    // 4. Update product details
+    const allVariations = updatedVariations;
+
+    const minPriceAfterDiscount = Math.min(...allVariations.map((v) => v.priceAfterDiscount));
+    const maxDiscountPercentage = Math.max(...allVariations.map((v) => v.discountPercentage));
+    const totalStock = allVariations.reduce((sum, v) => sum + v.stock, 0);
+
+
     existingProduct.description = description;
-    existingProduct.price = price;
-    existingProduct.category = category;
-    existingProduct.discountPercentage = discountPercentage;
-    existingProduct.priceAfterDiscount = priceAfterDiscount;
     existingProduct.imgUrl = imgUrl;
-    existingProduct.operatingSystem = operatingSystem;
-    existingProduct.screenSize = screenSize;
     existingProduct.colors = updatedColors;
-    existingProduct.storageVariants = validStorage;
+    existingProduct.variations = allVariations;
+    existingProduct.minPriceAfterDiscount = minPriceAfterDiscount;
+    existingProduct.maxDiscountPercentage = maxDiscountPercentage;
+    existingProduct.totalStock = totalStock;
 
     await existingProduct.save();
 
@@ -391,7 +484,6 @@ const updateProductById = async (req, res) => {
     res.status(500).json({ message: error.message || "Server Error" });
   }
 };
-
 
 const getProductById = async (req, res) => {
   try {
@@ -410,6 +502,8 @@ const getProductById = async (req, res) => {
 };
 
 
+
+
 export {
   addProduct,
   checkProductExists,
@@ -417,4 +511,5 @@ export {
   deleteProductById,
   updateProductById,
   getProductById,
+  getAllUsers
 };

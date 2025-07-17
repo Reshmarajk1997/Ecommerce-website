@@ -1,73 +1,56 @@
+
+
+
+
 import { useState,useEffect } from "react";
 import {fetchProducts} from '../../services/admin/productServices';
 
-const useProducts = ({ initialPage = 1, initialLimit = 10,refreshFlag  } = {})=>{
-    const [products,setProducts] = useState([]);
-    const [totalPages,setTotalPages] = useState(1);
-    const [total,setTotal] = useState(0);
-    const [page,setPage] = useState(initialPage);
-    const [limit] = useState(initialLimit);
-    const [sortBy,setSortBy] = useState("createdAt");
-    const [order,setOrder] = useState("asc");
-    const [search,setSearch] = useState("");
-    const [category,setCategory] = useState("");
-    const [loading,setLoading] = useState(false);
-    const [error,setError] = useState(null);
-    
+export function useProducts( refreshFlag,initialLimit = 10) {
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(initialLimit);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [order, setOrder] = useState("asc");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    useEffect(()=>{
-        const getProducts = async()=>{
-            setLoading(true);
-            setError(null);
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProducts({ page, limit, sortBy, order, search, category });
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            try {
-                const data = await fetchProducts({
-                    page,
-                    limit,
-                    sortBy,
-                    order,
-                    search,
-                    category
-                });
+  useEffect(() => {
+    loadProducts();
+   
+  }, [page, search, category, sortBy, order,refreshFlag]);
 
-                console.log("Fetched products:", data);
-
-                if(data.success){
-                    setProducts(data.products);
-                    setTotalPages(data.totalPages);
-                    setTotal(data.total);
-                }else{
-                    setError("Failed to fetch products");
-                }
-            } catch (err) {
-                setError(err.message || "Failed to fetch products");
-            }finally{
-                setLoading(false);
-            }
-        }
-
-        getProducts();
-    },[page,limit,sortBy,order,search,category,refreshFlag]);
-
-    return{
-        products,
-    totalPages,
-    total,
+  return {
+    products,
     page,
     setPage,
+    totalPages,
     limit,
-    sortBy,
-    setSortBy,
-    order,
-    setOrder,
     search,
     setSearch,
     category,
     setCategory,
+    sortBy,
+    setSortBy,
+    order,
+    setOrder,
     loading,
     error,
-    }
-
-};
-
-export default useProducts;
+  };
+}

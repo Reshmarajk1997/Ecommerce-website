@@ -6,7 +6,8 @@ import express from "express"
 import connectDB from './config/db.js';
 import authRoutes from "./routes/authRoutes.js"
 
-import productRoutes from './routes/productRoutes.js'
+import adminProductRoutes from './routes/adminProductRoutes.js'
+import userProductRoutes from './routes/userProductRoutes.js'
 
 
 const app = express();
@@ -17,7 +18,8 @@ app.get('/', (req, res) => {
     res.send('Server is running!');
   });
 app.use('/api/auth',authRoutes)
-app.use('/api/admin/products',productRoutes)
+app.use('/api/products',userProductRoutes)
+app.use('/api/admin/products',adminProductRoutes)
 
 connectDB();
 

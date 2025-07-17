@@ -44,6 +44,13 @@ const navigation = {
   ],
 };
 
+const adminNavigation = [
+  { name: "Dashboard", to: "/admin" },
+  { name: "Orders", to: "/admin/orders" },
+  { name: "Users", to: "/admin/users" },
+];
+
+
 export default function Navigation() {
   const [open, setOpen] = useState(false);
   const { user, loginOut, isInitialized } = useContext(AuthContext);
@@ -88,7 +95,7 @@ export default function Navigation() {
             </div>
 
             {/* Links */}
-            <TabGroup className="mt-2">
+            {/* <TabGroup className="mt-2">
               <div className="border-b border-gray-200">
                 <TabList className="-mb-px flex space-x-8 px-4">
                   {navigation.categories.map((category) => (
@@ -101,10 +108,51 @@ export default function Navigation() {
                   ))}
                 </TabList>
               </div>
-            </TabGroup>
+            </TabGroup> */}
+
+
+{/* User tabs like Men/Women - only for non-admins */}
+{!user?.isAdmin && (
+  <TabGroup className="mt-2">
+    <div className="border-b border-gray-200">
+      <TabList className="-mb-px flex space-x-8 px-4">
+        {navigation.categories.map((category) => (
+          <Tab
+            key={category.name}
+            className="flex-1 border-b-2 border-transparent px-1 py-4 text-base font-medium whitespace-nowrap text-gray-900 data-selected:border-indigo-600 data-selected:text-indigo-600"
+          >
+            {category.name}
+          </Tab>
+        ))}
+      </TabList>
+    </div>
+  </TabGroup>
+)}
+
+{/* Admin links - only for admin */}
+{user?.isAdmin && (
+  <div className="mt-4 border-t border-gray-200 pt-4 px-4">
+    
+    {adminNavigation.map((link) => (
+      <div key={link.name} className="flow-root mb-2">
+        <Link
+          to={link.to}
+          onClick={() => setOpen(false)}
+          className="-m-2 block p-2 font-medium text-gray-900"
+        >
+          {link.name}
+        </Link>
+      </div>
+    ))}
+  </div>
+)}
+
+
+
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-              {navigation.pages.map((page) => (
+
+              {/* {navigation.pages.map((page) => (
                 <div key={page.name} className="flow-root">
                   <a
                     href={page.href}
@@ -113,10 +161,26 @@ export default function Navigation() {
                     {page.name}
                   </a>
                 </div>
-              ))}
-            </div>
+              ))} */}
 
-            <div className="space-y-6 border-t border-gray-200 px-4 py-6">
+{!user?.isAdmin &&
+  navigation.pages.map((page) => (
+    <div key={page.name} className="flow-root">
+      <Link
+        to={page.href}
+        onClick={() => setOpen(false)}
+        className="-m-2 block p-2 font-medium text-gray-900"
+      >
+        {page.name}
+      </Link>
+    </div>
+  ))}
+
+
+
+            {/* </div>
+
+            <div className="space-y-6 border-t border-gray-200 px-4 py-6"> */}
 
 
             {user ? (
@@ -137,11 +201,7 @@ export default function Navigation() {
                   )}
 
                       <Button
-                        // onClick={() => {
-                        //   loginOut();
-                        //   navigate("/login");
-                        // }}
-
+                     
                         onClick={handleLogout}
                         size="small"
                         variant="text"
@@ -177,26 +237,7 @@ export default function Navigation() {
                     </>
                   )}
 
-              
-
-
-
-              {/* <div className="flow-root">
-                <a
-                  href="/login"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Sign in
-                </a>
-              </div>
-              <div className="flow-root">
-                <a
-                  href="/register"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Create account
-                </a>
-              </div> */}
+            
 
             </div>
           </DialogPanel>
@@ -222,14 +263,20 @@ export default function Navigation() {
 
               {/* Logo */}
               <div className="ml-4 flex lg:ml-0">
-                <a href="/">
+                {/* <a href="/">
                   <span className="sr-only">Your Company</span>
                   <img alt="" src="/logo.jpg" className="h-12 w-auto" />
-                </a>
+                </a> */}
+
+<Link to="/">
+  <span className="sr-only">Your Company</span>
+  <img alt="" src="/logo.jpg" className="h-12 w-auto" />
+</Link>
+
               </div>
 
               {/* Flyout menus */}
-              <PopoverGroup className="hidden lg:ml-8 lg:block lg:self-stretch">
+              {/* <PopoverGroup className="hidden lg:ml-8 lg:block lg:self-stretch">
                 <div className="flex h-full space-x-8">
                   {navigation.categories.map((category) => (
                     <Popover key={category.name} className="flex">
@@ -251,7 +298,49 @@ export default function Navigation() {
                     </a>
                   ))}
                 </div>
-              </PopoverGroup>
+              </PopoverGroup> */}
+
+
+<PopoverGroup className="hidden lg:ml-8 lg:block lg:self-stretch">
+  <div className="flex h-full space-x-8">
+    {!user?.isAdmin ? (
+      <>
+        {navigation.categories.map((category) => (
+          <Popover key={category.name} className="flex">
+            <div className="relative flex">
+              <PopoverButton className="relative z-10 -mb-px flex items-center border-b-2 border-transparent pt-px text-sm font-medium text-gray-700 transition-colors duration-200 ease-out hover:text-gray-800 data-open:border-indigo-600 data-open:text-indigo-600">
+                {category.name}
+              </PopoverButton>
+            </div>
+          </Popover>
+        ))}
+
+        {navigation.pages.map((page) => (
+          <Link
+            key={page.name}
+            to={page.href}
+            className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+          >
+            {page.name}
+          </Link>
+        ))}
+      </>
+    ) : (
+      <>
+        {adminNavigation.map((item) => (
+          <Link
+            key={item.name}
+            to={item.to}
+            className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+          >
+            {item.name}
+          </Link>
+        ))}
+      </>
+    )}
+  </div>
+</PopoverGroup>
+
 
               <div className="ml-auto flex items-center">
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
@@ -306,7 +395,7 @@ export default function Navigation() {
                 </div>
 
                 {/* Search */}
-                <div className="flex lg:ml-6">
+                {/* <div className="flex lg:ml-6">
                   <Link
                     to="/"
                     className="p-2 text-gray-400 hover:text-gray-500"
@@ -317,10 +406,10 @@ export default function Navigation() {
                       className="size-6"
                     />
                   </Link>
-                </div>
+                </div> */}
 
                 {/* Cart */}
-                <div className="ml-4 flow-root lg:ml-6">
+                {/* <div className="ml-4 flow-root lg:ml-6">
                   <Link to="/" className="group -m-2 flex items-center p-2">
                     <ShoppingBagIcon
                       aria-hidden="true"
@@ -331,7 +420,30 @@ export default function Navigation() {
                     </span>
                     <span className="sr-only">items in cart, view bag</span>
                   </Link>
-                </div>
+                </div> */}
+
+
+{!user?.isAdmin && (
+  <>
+    {/* Search */}
+    <div className="flex lg:ml-6">
+      <Link to="/" className="p-2 text-gray-400 hover:text-gray-500">
+        <MagnifyingGlassIcon className="size-6" />
+      </Link>
+    </div>
+
+    {/* Cart */}
+    <div className="ml-4 flow-root lg:ml-6">
+      <Link to="/" className="group -m-2 flex items-center p-2">
+        <ShoppingBagIcon className="size-6 ..." />
+        ...
+      </Link>
+    </div>
+  </>
+)}
+
+
+
               </div>
             </div>
           </div>

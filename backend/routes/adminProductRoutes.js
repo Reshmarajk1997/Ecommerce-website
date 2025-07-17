@@ -6,7 +6,8 @@ import {
   updateProductById,
   deleteProductById,
   getProductById,
-} from "../controllers/productControllers.js";
+  getAllUsers
+} from "../controllers/adminProductControllers.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 const { authenticateToken, isAdmin } = authMiddleware;
 import upload from "../middleware/multerMiddleware.js";
@@ -31,6 +32,8 @@ router.get("/check", checkProductExists);
 
 router.get("/",authenticateToken,isAdmin, getAllProducts);
 
+router.get("/users",authenticateToken,isAdmin, getAllUsers);
+
 router.delete('/:id', authenticateToken,isAdmin,deleteProductById);
 
 router.put('/:id', authenticateToken,isAdmin,
@@ -45,6 +48,10 @@ router.put('/:id', authenticateToken,isAdmin,
 )
 
 router.get('/:id', authenticateToken, isAdmin, getProductById);
+
+
+
+
 
 
 export default router;

@@ -20,7 +20,7 @@ const EditProductPage = () => {
     getProduct();
   }, [id]);
 
-  const productForm = useProductForm(initialData); // prefill form with product data
+  const productForm = useProductForm(initialData); 
 
   if (!initialData) return <div>Loading...</div>;
 

@@ -9,9 +9,11 @@ import HomePage from "./features/user/pages/HomePage";
 // import ProductOverview from './components/ProductOverview';
 import { AdminPage } from "./features/admin/pages/AdminPage";
 import ProtectedRoute from "./app/ProtectedRoute";
-import AddProductPage from "./features/product/pages/admin/AddProductPage";
-import ProductListPage from './features/product/pages/admin/ProductListPage';
+ import AddProductPage from "./features/product/pages/admin/AddProductPage";
+// import ProductListPage from './features/product/pages/admin/ProductListPage';
 import EditProductPage  from './features/product/pages/admin/EditProductPage';
+import ProductListPage from './features/product/pages/admin/ProductListPage';
+import UsersTablePage from './features/product/pages/admin/UsersTablePage';
 
 import { Navigate } from "react-router-dom";
 
@@ -29,8 +31,10 @@ function App() {
           <Route path="/admin" element={<ProtectedRoute adminOnly />}>
             <Route index element={<AdminPage />} />
             <Route path="add-product" element={<AddProductPage />} />
-            <Route path="products" element={<ProductListPage />} />
-             <Route path="products/edit/:id" element={<EditProductPage />} />
+            <Route path="users" element={<UsersTablePage/>}/>
+            {/* <Route path="products" element={<ProductListPage />} /> */}
+             <Route path="products/:id/edit" element={<EditProductPage />} />
+             <Route path="products" element={<ProductListPage />} />
           </Route>
 
           <Route path="/" element={<ProtectedRoute />}>

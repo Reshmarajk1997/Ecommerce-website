@@ -1,51 +1,58 @@
+
+
+
+
 import React from "react";
-import ProductCard from './ProductCard';
 
-
-const ProductsList = ({
+export function ProductsTable({
   products,
-  totalPages,
-  total,
   page,
   setPage,
-  sortBy,
-  setSortBy,
-  order,
-  setOrder,
+  totalPages,
   search,
   setSearch,
   category,
   setCategory,
+  sortBy,
+  setSortBy,
+  order,
+  setOrder,
   loading,
   error,
-  onDelete,
-}) => {
+}) {
+  const toggleOrder = () => setOrder(order === "asc" ? "desc" : "asc");
 
+  const handlePrevPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
 
-  
-
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-4 mb-4">
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Admin Products</h2>
+
+      {/* Filters */}
+      <div className="flex   gap-4 mb-4">
         <input
           type="text"
-          placeholder="Search by name or brand"
+          placeholder="Search by name or brand..."
           value={search}
           onChange={(e) => {
-            setPage(1);
             setSearch(e.target.value);
+            setPage(1);
           }}
-          className="p-2 border rounded"
+          className="border px-3 py-1 rounded"
         />
-
         <select
           value={category}
           onChange={(e) => {
-            setPage(1);
             setCategory(e.target.value);
+            setPage(1);
           }}
-          className="p-2 border rounded"
+          className="border px-3 py-1 rounded"
         >
           <option value="">All Categories</option>
           <option value="smartphone">Smartphone</option>
@@ -55,76 +62,103 @@ const ProductsList = ({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="p-2 border rounded"
+          className="border px-3 py-1 rounded"
         >
           <option value="createdAt">Created At</option>
           <option value="name">Name</option>
-          <option value="brand">Brand</option>
-          <option value="price">Price</option>
+          <option value="minPriceAfterDiscount">Min Price</option>
+          <option value="totalStock">Total Stock</option>
+          <option value="maxDiscountPercentage">Max Discount</option>
         </select>
 
-        <select
-          value={order}
-          onChange={(e) => setOrder(e.target.value)}
-          className="p-2 border rounded"
+        <button
+          onClick={toggleOrder}
+          className="bg-blue-500 text-white px-3 rounded"
         >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
+          Order: {order === "asc" ? "Asc" : "Des"}
+        </button>
       </div>
 
-      {loading && <p>Loading products...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-      {!loading && products.length === 0 && <p>No products found.</p>}
+      {/* Table */}
+      {loading ? (
+        <p>Loading products...</p>
+      ) : error ? (
+        <p className="text-red-600">{error}</p>
+      ) : products.length === 0 ? (
+        <p>No products found.</p>
+      ) : (
+        <table className="min-w-full border text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2">Image</th>
+              <th className="p-2">Name</th>
+              <th className="p-2">Brand</th>
+              <th className="p-2">Category</th>
+              <th className="p-2">Stock</th>
+              <th className="p-2">Min Price</th>
+              <th className="p-2">Max Discount</th>
+              <th className="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product._id} className="border-b">
+                <td className="p-2">
+                  <img
+                    src={product.imgUrl}
+                    alt={product.name}
+                    className="w-12 h-12 object-cover rounded"
+                  />
+                </td>
+                <td className="p-2">{product.name}</td>
+                <td className="p-2">{product.brand}</td>
+                <td className="p-2 capitalize">{product.category}</td>
+                <td className="p-2">{product.totalStock}</td>
+                <td className="p-2">${product.minPriceAfterDiscount}</td>
+                <td className="p-2">{product.maxDiscountPercentage}%</td>
+                <td className="p-2 space-x-2">
+                  <button
+                    onClick={() =>
+                      window.location.assign(`/admin/products/${product._id}/edit`)
+                    }
+                    className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                  >
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
-      
-
-           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.length > 0 ? (
-          products.map((product) => <ProductCard key={product._id} product={product} onDelete={onDelete} />)
-        ) : (
-          <p>No products found.</p>
-        )}
-      </ul>
-
-
-      <div className="flex  items-center justify-center gap-4 mt-6">
+      {/* Pagination Controls */}
+      <div className="mt-4 flex justify-center items-center gap-4">
         <button
-          onClick={() => setPage(page - 1)}
           disabled={page === 1}
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+          onClick={handlePrevPage}
+          className={`px-3 py-1 rounded border ${
+            page === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-200"
+          }`}
         >
           Prev
         </button>
         <span>
-          Page {page} of {totalPages} ({total} products)
+          Page {page} of {totalPages}
         </span>
         <button
-          onClick={() => setPage(page + 1)}
           disabled={page === totalPages}
-          className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+          onClick={handleNextPage}
+          className={`px-3 py-1 rounded border ${
+            page === totalPages
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-200"
+          }`}
         >
           Next
         </button>
       </div>
-
-        {/* <div className="mt-4 flex gap-2">
-        <button
-          onClick={handleEdit}
-          className="px-3 py-1 bg-yellow-400 text-white text-xs rounded hover:bg-yellow-500"
-        >
-          Edit
-        </button>
-        <button
-          onClick={handleDelete}
-          className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-        >
-          Delete
-        </button>
-      </div> */}
-
     </div>
   );
-};
+}
 
-export default ProductsList;
