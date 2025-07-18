@@ -9,7 +9,9 @@ const ProductCard = React.memo(({ product }) => {
   const navigate = useNavigate();
 
   return (
-    <li className="border border-gray-300 rounded-lg shadow-lg p-5 flex flex-col items-center 
+    <li 
+    onClick={()=>navigate(`/product/${product._id}`)}
+    className="border border-gray-300 rounded-lg shadow-lg p-5 flex flex-col items-center 
   bg-white hover:shadow-xl transition-shadow duration-300 w-full">
 
       <img
@@ -47,7 +49,10 @@ const ProductCard = React.memo(({ product }) => {
 
       <div className="mt-auto flex flex-wrap justify-center gap-3 w-full">
         <button
-          onClick={() => setCurrentImage(product.imgUrl)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrentImage(product.imgUrl);
+          }}
           className={`px-4 py-1 rounded border transition-colors duration-300 font-medium ${
             currentImage === product.imgUrl
               ? "bg-blue-600 text-white border-blue-600"
@@ -61,7 +66,10 @@ const ProductCard = React.memo(({ product }) => {
         {product.colorOptions?.map(({ colorName, imgUrl }) => (
           <button
             key={colorName}
-            onClick={() => setCurrentImage(imgUrl)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentImage(imgUrl);
+            }}
             className={`px-4 py-1 rounded border transition-colors duration-300 font-medium ${
               currentImage === imgUrl
                 ? "bg-blue-600 text-white border-blue-600"

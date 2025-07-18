@@ -48,6 +48,23 @@ export const fetchProducts = async ({
   return response.data;
 };
 
+export const fetchProductById = async (productId) => {
+  const token = getToken();
+  if (!token) throw new Error("Unauthorized: No token found");
+  try {
+    const response = await API.get(`/${productId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+  } catch (error) {
+     console.error("Failed to fetch product by ID:", error.message);
+    throw error;
+  
+  } 
+};
 
 
 
