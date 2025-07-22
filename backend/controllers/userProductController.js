@@ -94,7 +94,61 @@ const getProductById = async (req, res) => {
 };
 
 
+const addReview = async(req,res)=>{
+  const {rating,comment} = req.body;
+  const {id} = req.params;
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const alreadyReviewed = product.reviews.find(
+      (r)=>r.user.toString() === req.user._id.toString()
+    )
+     if (alreadyReviewed) {
+      return res.status(400).json({ message: "Product already reviewed" });
+    }
+
+    const review = {
+      user: req.user._id,
+      name: req.user.userName,
+      rating: Number(rating),
+      comment,
+    }
+
+    product.reviews.push(review);
+     product.numReviews = product.reviews.length;
+    product.averageRating =
+      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      product.reviews.length;
+
+       await product.save();
+    res.status(201).json({ 
+  message: "Review added successfully",
+  product,          // send updated product with new reviews
+});
+  } catch (error) {
+     console.error("Add review error:", error); 
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+const getProductReviews  = async(req,res)=>{
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId).populate("reviews.user","name");
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    res.status(200).json(product.reviews);
+  } catch (error) {
+     res.status(500).json({ message: error.message });
+  }
+}
+
 export {
     getAllProducts,
     getProductById,
+    addReview,
+    getProductReviews,
 }

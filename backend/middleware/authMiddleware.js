@@ -33,6 +33,8 @@ const isUser = async(req,res,next)=>{
       return res.status(403).json({ message: "Access restricted to regular users" });
     }
 
+     req.user = user;
+
     next();
     } catch (error) {
          return res.status(500).json({ message: "Server error", error: error.message });
@@ -48,6 +50,7 @@ const isAdmin = async(req,res,next)=>{
         if(!user || !user.isAdmin){
             return res.status(403).json({message:"Admin access required"})
         }
+         req.user = user;
         next();
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });

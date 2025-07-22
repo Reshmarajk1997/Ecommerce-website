@@ -7,7 +7,14 @@ const ProductOverview = ({
   setSelectedVariation,
   currentImage,
   setCurrentImage,
+  loading,
+    error,
 }) => {
+
+  if (loading) return <div className="p-10 text-gray-600">Loading product...</div>;
+  if (error) return <div className="p-10 text-red-500">{error}</div>;
+  if (!product) return <div className="p-10">Product not found</div>;
+
   return (
     <div className="bg-white py-10 px-4 sm:px-6 lg:px-8">
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
@@ -46,6 +53,21 @@ const ProductOverview = ({
           <h2 className="text-3xl font-bold text-gray-900">
             {product.name} ({selectedVariation.storage})
           </h2>
+
+         {/* Rating and Reviews */}
+<div className="flex items-center gap-4 mt-1">
+  <div className="flex items-center gap-1 text-yellow-500 text-lg">
+    {Array.from({ length: 5 }, (_, i) => (
+      <span key={i}>
+        {i < Math.round(product.averageRating) ? "★" : "☆"}
+      </span>
+    ))}
+  </div>
+  <span className="text-sm text-gray-600">
+    {product.averageRating.toFixed(1)} ({product.numReviews} reviews)
+  </span>
+</div>
+
 
           <div className="text-gray-600">
             <p><strong>Brand:</strong> {product.brand}</p>

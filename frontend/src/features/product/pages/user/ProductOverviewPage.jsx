@@ -1,30 +1,50 @@
 import React from 'react';
 import {useProductOverview} from '../../hooks/user/useProductOverview';
+import {useGetProductReviews} from '../../hooks/user/useGetProductReviews';
+
 import ProductOverview from '../../components/user/ProductOverview';
+import ReviewForm from '../../components/user/ReviewForm';
+import ReviewList from '../../components/user/ReviewList';
 
 const ProductOverviewPage = () => {
-  const {
-    product,
-    selectedVariation,
-    setSelectedVariation,
-    currentImage,
-    setCurrentImage,
-    loading,
-    error,
-  } = useProductOverview();
+  const productOverviewProps = useProductOverview();
+   const { product, setProduct } = productOverviewProps;
 
-  if (loading) return <div className="p-10 text-gray-600">Loading product...</div>;
-  if (error) return <div className="p-10 text-red-500">{error}</div>;
-  if (!product) return <div className="p-10">Product not found</div>;
+   const {
+    reviews,
+    loadingReviews,
+    errorReviews,
+    refetchReviews
+  } = useGetProductReviews(product?._id);
+
+ 
 
   return (
-    <ProductOverview
-      product={product}
-      selectedVariation={selectedVariation}
-      setSelectedVariation={setSelectedVariation}
-      currentImage={currentImage}
-      setCurrentImage={setCurrentImage}
-    />
+    <div className='px-4 py-6'>
+       <ProductOverview {...productOverviewProps}/>
+
+
+      {product && (
+        <>
+          <ReviewForm
+            productId={product._id}
+            onReviewAdded={() => {
+              // Refresh product details if needed, and refresh reviews
+              refetchReviews();
+            }}
+          />
+
+          {loadingReviews ? (
+            <p className="text-center text-gray-500 mt-4">Loading reviews...</p>
+          ) : errorReviews ? (
+            <p className="text-red-600 text-center">{errorReviews}</p>
+          ) : (
+            <ReviewList reviews={reviews} />
+          )}
+        </>
+      )}
+    </div>
+   
   );
 };
 

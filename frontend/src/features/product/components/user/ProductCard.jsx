@@ -4,6 +4,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const StarDisplay = ({ rating }) => {
+  const rounded = Math.round(rating);
+  return (
+    <div className="flex justify-center items-center gap-1 text-yellow-400">
+      {[1,2,3,4,5].map((star) => (
+        <span key={star} className="text-xl select-none">
+          {star <= rounded ? "★" : "☆"}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 const ProductCard = React.memo(({ product }) => {
   const [currentImage, setCurrentImage] = useState(product.imgUrl);
   const navigate = useNavigate();
@@ -24,6 +37,13 @@ const ProductCard = React.memo(({ product }) => {
         {`${product.name} (${product.defaultVariation.storage})`}
       </h3>
 
+       <div className="flex flex-col items-center mb-3">
+        <StarDisplay rating={product.averageRating} />
+        <p className="text-gray-600 text-sm">
+          {product.numReviews} review{product.numReviews !== 1 ? "s" : ""}
+        </p>
+      </div>
+
       <div className="flex items-center gap-3 mb-3">
         <p className="text-gray-400 line-through font-semibold text-lg">
           ${product.defaultVariation.price.toFixed(2)}
@@ -37,13 +57,13 @@ const ProductCard = React.memo(({ product }) => {
         ${product.defaultVariation.priceAfterDiscount.toFixed(2)}
       </p>
 
-      <div className="w-full text-sm text-gray-600 space-y-1 mb-4 text-center">
+      {/* <div className="w-full text-sm text-gray-600 space-y-1 mb-4 text-center">
         <p><span className="font-semibold text-gray-800">Brand:</span> {product.brand}</p>
         <p><span className="font-semibold text-gray-800">Operating System:</span> {product.operatingSystem}</p>
         <p><span className="font-semibold text-gray-800">Screen Size:</span> {product.screenSize}</p>
       </div>
 
-      <p className="text-gray-700 text-center mb-4 line-clamp-3">{product.description}</p>
+      <p className="text-gray-700 text-center mb-4 line-clamp-3">{product.description}</p> */}
 
       
 

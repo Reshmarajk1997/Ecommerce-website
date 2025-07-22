@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import ReviewSchema from "./ReviewModel.js";
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -65,6 +66,8 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    reviews:[ReviewSchema],
 
     averageRating: {
       type: Number,
