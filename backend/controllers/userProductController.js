@@ -7,19 +7,25 @@ const getAllProducts = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page)) || 1;
     const limit = Math.max(1, parseInt(req.query.limit)) || 10;
-    const sortBy = req.query.sortBy || "createdAt";
+    const sortBy = req.query.sortBy || "name";
     const order = req.query.order?.toLowerCase() === "desc" ? -1 : 1;
 
     const search = req.query.search || "";
-    const category = req.query.category || "";
+    const category = (req.query.category || "").trim();
+
+     console.log("Incoming filters:", { search, category, page, limit, sortBy, order });
 
     const query = buildProductQuery({ search, category });
+
+     console.log("MongoDB query before adding variations filter:", query);
 
     query.variations = { $exists: true, $ne: [] };
 
     const products = await Product.find(query)
       .collation({ locale: "en", strength: 2 })
       .sort({ [sortBy]: order });
+
+      console.log(`Found ${products.length} products matching query.`);
 
     // Map each product to include only one defaultVariation (e.g., the first variation)
     const productCards = products.map((product) => {
@@ -40,23 +46,36 @@ const getAllProducts = async (req, res) => {
         averageRating: product.averageRating,
         numReviews: product.numReviews,
         createdAt: product.createdAt,
-        minPriceAfterDiscount: product.minPriceAfterDiscount,
-        maxDiscountPercentage: product.maxDiscountPercentage,
-        totalStock: product.totalStock,
+        
       };
     });
 
-    
-    productCards.sort((a, b) => {
-      let aVal = a[sortBy];
-      let bVal = b[sortBy];
+   
 
-      if (typeof aVal === "string") {
-        return order === -1 ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+
+ const variationFields = ["priceAfterDiscount", "discountPercentage", "stock"];
+
+    productCards.sort((a, b) => {
+      let aVal, bVal;
+
+      if (variationFields.includes(sortBy)) {
+        aVal = a.defaultVariation?.[sortBy] ?? 0;
+        bVal = b.defaultVariation?.[sortBy] ?? 0;
       } else {
-        return order === -1 ? (bVal || 0) - (aVal || 0) : (aVal || 0) - (bVal || 0);
+        aVal = a[sortBy] ?? "";
+        bVal = b[sortBy] ?? "";
       }
+
+      // Compare strings
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return order === -1 ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+      }
+
+      // Compare numbers
+      return order === -1 ? bVal - aVal : aVal - bVal;
     });
+
+
 
     // Pagination
     const total = productCards.length;
@@ -123,9 +142,21 @@ const addReview = async(req,res)=>{
       product.reviews.length;
 
        await product.save();
+
+       const newReview  = product.reviews[product.reviews.length-1]
+
+
     res.status(201).json({ 
   message: "Review added successfully",
-  product,          // send updated product with new reviews
+  //  review: {
+  //       name: newReview.name,
+  //       rating: newReview.rating,
+  //       comment: newReview.comment,
+  //       createdAt: newReview.createdAt, // this is auto-populated
+  //     },
+  review:newReview,
+      averageRating: product.averageRating,
+      numReviews: product.numReviews,          // send updated product with new reviews
 });
   } catch (error) {
      console.error("Add review error:", error); 

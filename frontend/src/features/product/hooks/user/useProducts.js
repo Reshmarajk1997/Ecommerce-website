@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { fetchProducts } from "../../services/user/productsServices";
 
-const useProducts = ({ initialPage = 1, initialLimit = 10, refreshFlag } = {}) => {
+const useProducts = ({ initialPage = 1, initialLimit = 10, refreshFlag ,initialCategory = "",} = {}) => {
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -13,7 +13,7 @@ const useProducts = ({ initialPage = 1, initialLimit = 10, refreshFlag } = {}) =
   const [sortBy, setSortBy] = useState("createdAt");
   const [order, setOrder] = useState("asc");
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(initialCategory);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 

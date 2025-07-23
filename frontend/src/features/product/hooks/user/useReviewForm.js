@@ -17,7 +17,12 @@ export const useReviewForm = (productId, onReviewAdded) => {
     try {
       const data = await addReview(productId, { rating, comment });
        if (typeof onReviewAdded === "function") {
-        onReviewAdded(data.product);
+        // onReviewAdded(data.product);
+         onReviewAdded({
+    averageRating: data.averageRating,
+    numReviews: data.numReviews,
+    review:data.review
+  });
       }
       
       setRating(5);

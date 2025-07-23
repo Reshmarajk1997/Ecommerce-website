@@ -13,12 +13,12 @@ export const useProductOverview  = ()=>{
   const [error, setError] = useState(null);
 
 
-  useEffect(()=>{
-    const loadProduct = async()=>{
+   const loadProduct = async()=>{
         try {
             const res = await fetchProductById(id);
             const p = res.product;
             setProduct(p);
+
            if (p.variations && p.variations.length > 0) {
         setSelectedVariation(p.variations[0]);
         setCurrentImage(p.imgUrl);
@@ -33,16 +33,21 @@ export const useProductOverview  = ()=>{
             setLoading(false)
         }
     }
+
+  useEffect(()=>{
+
     loadProduct()
   },[id])
 
   return{
     product,
+    setProduct,
     selectedVariation,
     setSelectedVariation,
     currentImage,
     setCurrentImage,
     loading,
     error,
+    refetchProduct: loadProduct,
   }
 }

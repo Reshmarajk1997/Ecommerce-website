@@ -1,36 +1,41 @@
-import React from 'react';
-import {useProductOverview} from '../../hooks/user/useProductOverview';
-import {useGetProductReviews} from '../../hooks/user/useGetProductReviews';
+import React, { useState, useEffect } from "react";
+import { useProductOverview } from "../../hooks/user/useProductOverview";
+import { useGetProductReviews } from "../../hooks/user/useGetProductReviews";
 
-import ProductOverview from '../../components/user/ProductOverview';
-import ReviewForm from '../../components/user/ReviewForm';
-import ReviewList from '../../components/user/ReviewList';
+import ProductOverview from "../../components/user/ProductOverview";
+import ReviewForm from "../../components/user/ReviewForm";
+import ReviewList from "../../components/user/ReviewList";
 
 const ProductOverviewPage = () => {
   const productOverviewProps = useProductOverview();
-   const { product, setProduct } = productOverviewProps;
+  const { product, setProduct } = productOverviewProps;
 
-   const {
-    reviews,
-    loadingReviews,
-    errorReviews,
-    refetchReviews
-  } = useGetProductReviews(product?._id);
 
- 
+  const { reviews,setReviews, loadingReviews, errorReviews, refetchReviews } =
+    useGetProductReviews(product?._id);
 
   return (
-    <div className='px-4 py-6'>
-       <ProductOverview {...productOverviewProps}/>
-
+    <div className="px-4 py-6">
+      <ProductOverview {...productOverviewProps} />
 
       {product && (
         <>
           <ReviewForm
             productId={product._id}
-            onReviewAdded={() => {
-              // Refresh product details if needed, and refresh reviews
-              refetchReviews();
+            onReviewAdded={(updatedProductFromServer) => {
+              setProduct((prevProduct) => ({
+                ...prevProduct,
+                averageRating: updatedProductFromServer.averageRating,
+                numReviews: updatedProductFromServer.numReviews,
+              }));
+
+               if (updatedProductFromServer.review) {
+                setReviews((prevReviews) => [
+                  updatedProductFromServer.review,
+                  ...prevReviews,
+                ]);
+              }
+
             }}
           />
 
@@ -44,7 +49,6 @@ const ProductOverviewPage = () => {
         </>
       )}
     </div>
-   
   );
 };
 

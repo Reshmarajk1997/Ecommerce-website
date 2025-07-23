@@ -14,6 +14,7 @@ import EditProductPage  from './features/product/pages/admin/EditProductPage';
 import ProductListPage from './features/product/pages/admin/ProductListPage';
 import UsersTablePage from './features/product/pages/admin/UsersTablePage';
 import ProductOverviewPage from './features/product/pages/user/ProductOverviewPage'
+import UserProductListPage from './features/product/pages/user/UserProductListPage'
 
 import { Navigate } from "react-router-dom";
 
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<ProtectedRoute />}>
             <Route index element={<HomePage />} />
             <Route path="product/:id" element={<ProductOverviewPage/>}/>
+            <Route path="products" element={< UserProductListPage/>} />
           </Route>
 
           {/* <Route path='/product/:id' element={<ProductOverview/>}/> */}

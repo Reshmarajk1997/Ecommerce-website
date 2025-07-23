@@ -26,6 +26,7 @@ export const useGetProductReviews = (productId) =>{
 
    return {
     reviews,
+    setReviews,
     loadingReviews,
     errorReviews,
     refetchReviews: fetchReviews, // useful after submitting a new review

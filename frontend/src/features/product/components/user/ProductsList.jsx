@@ -17,7 +17,7 @@ const ProductsList = ({
   setCategory,
   loading,
   error,
-  onDelete,
+  hideCategoryFilter
 }) => {
   return (
     <div className="">
@@ -34,7 +34,7 @@ const ProductsList = ({
           shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
         />
 
-        <select
+        {/* <select
           value={category}
           onChange={(e) => {
             setPage(1);
@@ -46,7 +46,23 @@ const ProductsList = ({
           <option value="">All Categories</option>
           <option value="smartphone">Smartphone</option>
           <option value="tablet">Tablet</option>
-        </select>
+        </select> */}
+
+        {!hideCategoryFilter && (
+          <select
+            value={category}
+            onChange={(e) => {
+              setPage(1);
+              setCategory(e.target.value);
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-md 
+            shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
+          >
+            <option value="">All Categories</option>
+            <option value="smartphone">Smartphone</option>
+            <option value="tablet">Tablet</option>
+          </select>
+        )}
 
         <select
           value={sortBy}
@@ -54,12 +70,16 @@ const ProductsList = ({
           className="px-4 py-2 border border-gray-300 rounded-md shadow-sm 
           focus:outline-none focus:ring focus:ring-blue-200"
         >
-          <option value="createdAt">Created At</option>
+          {/* <option value="createdAt">Created At</option> */}
           <option value="name">Name</option>
           <option value="brand">Brand</option>
-          <option value="minPriceAfterDiscount">Price</option>
+          {/* <option value="minPriceAfterDiscount">Price</option>
           <option value="maxDiscountPercentage">Max Discount</option>
-          <option value="totalStock">Total Stock</option>
+           <option value="totalStock">Stock</option> */}
+  <option value="priceAfterDiscount">Default Variation Price</option>
+  <option value="discountPercentage">Default Variation Discount</option>
+  <option value="stock">Default Variation Stock</option>
+          {/* <option value="totalStock">Total Stock</option> */}
         </select>
 
         <select
