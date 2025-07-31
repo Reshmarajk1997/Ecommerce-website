@@ -4,10 +4,11 @@ import cors from "cors"
 import express from "express"
 
 import connectDB from './config/db.js';
-import authRoutes from "./routes/authRoutes.js"
 
+import authRoutes from "./routes/authRoutes.js"
 import adminProductRoutes from './routes/adminProductRoutes.js'
 import userProductRoutes from './routes/userProductRoutes.js'
+import cartRoutes from './routes/cartRoutes.js'
 
 
 const app = express();
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth',authRoutes)
 app.use('/api/products',userProductRoutes)
 app.use('/api/admin/products',adminProductRoutes)
+app.use('/api/cart',cartRoutes)
 
 connectDB();
 

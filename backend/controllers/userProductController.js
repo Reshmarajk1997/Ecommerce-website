@@ -1,7 +1,10 @@
 import Product from "../models/Product.js";
+
 import { buildProductQuery } from "../utils/buildProductQuery.js";
 
 
+
+//get all product
 
 const getAllProducts = async (req, res) => {
   try {
@@ -96,6 +99,8 @@ const getAllProducts = async (req, res) => {
 };
 
 
+//get product by id
+
 const getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -112,6 +117,8 @@ const getProductById = async (req, res) => {
   }
 };
 
+
+//add review
 
 const addReview = async(req,res)=>{
   const {rating,comment} = req.body;
@@ -165,6 +172,8 @@ const addReview = async(req,res)=>{
 }
 
 
+//get all review of a product
+
 const getProductReviews  = async(req,res)=>{
   try {
     const productId = req.params.id;
@@ -176,6 +185,11 @@ const getProductReviews  = async(req,res)=>{
      res.status(500).json({ message: error.message });
   }
 }
+
+
+//adding to cart
+
+
 
 export {
     getAllProducts,

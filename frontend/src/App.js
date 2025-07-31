@@ -15,6 +15,7 @@ import ProductListPage from './features/product/pages/admin/ProductListPage';
 import UsersTablePage from './features/product/pages/admin/UsersTablePage';
 import ProductOverviewPage from './features/product/pages/user/ProductOverviewPage'
 import UserProductListPage from './features/product/pages/user/UserProductListPage'
+import CartPage from './features/product/pages/user/CartPage'
 
 import { Navigate } from "react-router-dom";
 
@@ -42,6 +43,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="product/:id" element={<ProductOverviewPage/>}/>
             <Route path="products" element={< UserProductListPage/>} />
+            <Route path="/cart" element={< CartPage/>} />
           </Route>
 
           {/* <Route path='/product/:id' element={<ProductOverview/>}/> */}

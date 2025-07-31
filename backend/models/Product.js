@@ -18,11 +18,12 @@ const ProductSchema = new mongoose.Schema(
     operatingSystem: {
       type: String,
       required: true,
-      enum: ["Android", "iOS", "Others"],
+      enum: ["android", "ios", "others"],
     },
     screenSize: {
-      type: String,
-      required: true,
+      type: Number,
+  required: true,
+  min: 1,
     },
     imgUrl: {
       type: String,
@@ -41,6 +42,7 @@ const ProductSchema = new mongoose.Schema(
     ],
     variations: [
       {
+        colorName: { type: String, required: true },
         storage: { type: String, required: true },
         stock: { type: Number, required: true, min: 0 },
         price: { type: Number, required: true },

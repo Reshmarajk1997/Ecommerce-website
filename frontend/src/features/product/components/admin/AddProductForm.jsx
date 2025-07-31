@@ -163,18 +163,21 @@ const AddProductForm = ({
         <h4 className="text-lg font-semibold text-violet-900 border-b pb-1 mb-2 mt-4">
           Storage Variations
         </h4>
-        <div className="grid md:grid-cols-5 gap-3 font-semibold mb-2">
+        <div className="grid md:grid-cols-6 gap-3 font-semibold mb-2">
   <div>Storage</div>
   <div>Stock</div>
   <div>Price</div>
   <div>Discount %</div>
-  <div>Action</div>
+  
+   <div>Color</div>
+   <div>Action</div>
 </div>
         {form.variations.map((v, idx) => (
           <div
             key={idx}
-            className="grid md:grid-cols-5 gap-3 mb-2 items-center"
+            className="grid md:grid-cols-6 gap-3 mb-2 items-center"
           >
+            
             <input
               name="storage"
               value={v.storage}
@@ -206,6 +209,13 @@ const AddProductForm = ({
               placeholder="Discount %"
               className="p-2 border rounded-md"
             />
+            <input
+      name="colorName"
+      value={v.colorName}
+      onChange={(e) => handleVariationChange(idx, e)}
+      placeholder="Color Name"
+      className="p-2 border rounded-md"
+    />
             <button
               type="button"
               onClick={() => removeVariation(idx)}

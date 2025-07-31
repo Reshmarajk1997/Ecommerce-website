@@ -5,27 +5,6 @@ const API = axios.create({
   baseURL: "http://localhost:5000/api/admin/products/",
 });
 
-export const fetchProducts = async ({
-  page,
-  limit,
-  sortBy,
-  order,
-  search,
-  category,
-}) => {
-  const token = getToken();
-  if (!token) throw new Error("Unauthorized: No token found");
-
-  const response = await API.get("/", {
-    params: { page, limit, order, sortBy, search, category },
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  console.log("Fetching with order:", order, "and sortBy:", sortBy);
-
-  return response.data;
-};
 
 export const addProduct = async (productData) => {
   const token = getToken();
@@ -49,6 +28,30 @@ export const addProduct = async (productData) => {
     throw new Error(error.response?.data?.message || "Something went wrong");
   }
 };
+
+export const fetchProducts = async ({
+  page,
+  limit,
+  sortBy,
+  order,
+  search,
+  category,
+}) => {
+  const token = getToken();
+  if (!token) throw new Error("Unauthorized: No token found");
+
+  const response = await API.get("/", {
+    params: { page, limit, order, sortBy, search, category },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log("Fetching with order:", order, "and sortBy:", sortBy);
+
+  return response.data;
+};
+
+
 
 export const checkProductExists = async (name, brand) => {
   try {

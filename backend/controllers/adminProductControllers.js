@@ -39,25 +39,12 @@ const addProduct = async (req, res) => {
       });
     }
 
-    const trimmedName = name.trim();
-    const trimmedBrand = brand.trim();
-    const normalizedStorages = variations
-      .map((v) => v.storage?.trim())
-      .filter(Boolean);
-
-    // const existingProduct = await Product.findOne({
-    //       name: { $regex: `^${trimmedName}$`, $options: "i" },
-    //       brand: { $regex: `^${trimmedBrand}$`, $options: "i" },
-    //       variations: {
-    //         $elemMatch: {
-    //           storage: {
-    //             $in: normalizedStorages.map(
-    //               (s) => new RegExp(`^${s}$`, "i")
-    //             ),
-    //           },
-    //         },
-    //       },
-    //     });
+    const trimmedName = name.trim().toLowerCase();
+    const trimmedBrand = brand.trim().toLowerCase();
+    const trimmedDescription = description.trim();
+    const trimmedCategory = category.trim().toLowerCase();
+    const trimmedOperatingSystem = operatingSystem.trim().toLowerCase();
+  
 
     const existingProduct = await Product.findOne({
       name: { $regex: `^${trimmedName}$`, $options: "i" },
@@ -71,17 +58,24 @@ const addProduct = async (req, res) => {
       });
     }
 
-    if (!["Android", "iOS", "Others"].includes(operatingSystem)) {
+    if (!["android", "ios", "others"].includes(trimmedOperatingSystem)) {
       return res.status(400).json({
         message: "Operating system must be 'Android', 'iOS' or 'Other'.",
       });
     }
 
-    if (!["smartphone", "tablet"].includes(category)) {
+    if (!["smartphone", "tablet"].includes(trimmedCategory)) {
       return res.status(400).json({
         message: "Operating system must be 'smartphone' or 'tablet'.",
       });
     }
+
+
+    const trimmedScreenSize = Number(screenSize);
+if (isNaN(trimmedScreenSize) || trimmedScreenSize <= 0) {
+  return res.status(400).json({ message: "Screen size must be a positive number." });
+}
+
 
     let imgUrl = "";
     if (req.files?.mainImage?.[0]) {
@@ -101,6 +95,39 @@ const addProduct = async (req, res) => {
         .status(400)
         .json({ message: "Main product image is required." });
     }
+
+
+    const seenColorNames = new Set();
+
+colors.forEach((c, index) => {
+  const cleanColor = c.colorName?.trim().toLowerCase();
+
+  if (!cleanColor) {
+    throw new Error(`Color at index ${index} must have a valid colorName`);
+  }
+
+  if (seenColorNames.has(cleanColor)) {
+    throw new Error(`Duplicate color "${c.colorName}" found in colors array at index ${index}`);
+  }
+
+  seenColorNames.add(cleanColor);
+});
+
+
+// Check for extra color images that don't match any color index
+const colorImageKeys = Object.keys(req.files).filter((key) => key.startsWith("colorImage_"));
+const maxColorIndex = colors.length - 1;
+
+for (const key of colorImageKeys) {
+  const indexStr = key.split("_")[1];
+  const index = parseInt(indexStr, 10);
+
+  if (isNaN(index) || index > maxColorIndex) {
+    return res.status(400).json({
+      message: `Unexpected image file '${key}' found which does not correspond to any color.`,
+    });
+  }
+}
 
     const updatedColors = await Promise.all(
       colors.map(async (color, index) => {
@@ -131,27 +158,61 @@ const addProduct = async (req, res) => {
       })
     );
 
-    const validatedVariations = variations.map((v) => {
+    const allowedColorNames  = colors.map((c)=> c.colorName.trim().toLowerCase());
+    const variationKeySet = new Set();
+
+    const validatedVariations = variations.map((v,idx) => {
+
+
+
+      const colorName = v.colorName?.trim();
+       const storage = v.storage?.trim();
       const price = Number(v.price);
       const discount = Number(v.discountPercentage);
       const stock = Number(v.stock);
 
-      if (!v.storage || isNaN(price) || isNaN(discount) || isNaN(stock)) {
-        throw new Error("Invalid variation values.");
+      if (!colorName ||!storage || isNaN(price) || isNaN(discount) || isNaN(stock)) {
+        throw new Error(`Invalid variation at index ${idx}: missing or invalid fields.`);
       }
+
+      if (price <= 0) {
+  throw new Error(`Price for variation at index ${idx} must be greater than 0.`);
+}
+
 
       if (discount < 0 || discount > 100) {
-        throw new Error("Discount percentage must be between 0 and 100.");
+        throw new Error(`Discount for variation at index ${idx} must be between 0 and 100.`)
+      }
+      if (stock < 1 ) {
+        throw new Error(`stock for variation at index ${idx} must be greater than 0`)
       }
 
+        if (!allowedColorNames.includes(colorName.toLowerCase())) {
+    throw new Error(`Variation at index ${idx} uses color "${colorName}" which is not in the main colors list.`);
+  }
+
+    const key = `${colorName.toLowerCase()}-${storage.toLowerCase()}`;
+  if (variationKeySet.has(key)) {
+    throw new Error(`Duplicate variation: ${storage} for color ${colorName} at index ${idx}.`);
+  }
+  variationKeySet.add(key);
+
       return {
-        storage: v.storage,
+        colorName,
+        storage,
         stock,
         price,
         discountPercentage: discount,
         priceAfterDiscount: +(price - (price * discount) / 100).toFixed(2),
       };
     });
+
+//           const usedColors = new Set(validatedVariations.map(v => v.colorName.trim().toLowerCase()));
+// allowedColorNames.forEach((color, index) => {
+//   if (!usedColors.has(color)) {
+//     throw new Error(`Color "${colors[index].colorName}" in 'colors' array is not used in any variation.`);
+//   }
+// });
 
     const minPriceAfterDiscount = Math.min(
       ...validatedVariations.map((v) => v.priceAfterDiscount)
@@ -166,11 +227,11 @@ const addProduct = async (req, res) => {
     const newProduct = new Product({
       name: trimmedName,
       brand: trimmedBrand,
-      description,
-      category,
+      description:trimmedDescription,
+      category:trimmedCategory,
       imgUrl,
-      operatingSystem,
-      screenSize,
+      operatingSystem:trimmedOperatingSystem,
+      screenSize:trimmedScreenSize,
       colors: updatedColors,
       variations: validatedVariations,
       minPriceAfterDiscount,
@@ -390,9 +451,14 @@ const updateProductById = async (req, res) => {
             (c) => c.colorName === color.colorName
           );
 
+          if (!existingColor) {
+  throw new Error(`Image is required for new color "${color.colorName}".`);
+}
+
+
           return {
             ...color,
-            imgUrl: existingColor ? existingColor.imgUrl : "",
+            imgUrl:existingColor.imgUrl ,
           };
         }
       })
@@ -408,12 +474,41 @@ const updateProductById = async (req, res) => {
     const incomingMap = new Map();
     const updatedVariations = [];
 
+    // Cross-validation: ensure every variation.colorName exists in updatedColors
+const validColorNamesSet = new Set(
+  updatedColors.map((c) => c.colorName.trim().toLowerCase())
+);
+
+for (let v of variations) {
+  const colorName = v.colorName?.trim().toLowerCase();
+  if (!validColorNamesSet.has(colorName)) {
+    throw new Error(
+      `Variation color "${v.colorName}" is not listed in the main colors array.`
+    );
+  }
+}
+
+
     for (let v of variations) {
       const storage = v.storage?.trim().toLowerCase();
+       const colorName = v.colorName?.trim().toLowerCase();
 
-      if (!storage || isNaN(v.price) || isNaN(v.discountPercentage) || isNaN(v.stock)) {
-        throw new Error("Each variation must have valid storage, price, discount, and stock.");
-      }
+      // if (!colorName ||!storage || isNaN(v.price) || isNaN(v.discountPercentage) || isNaN(v.stock)) {
+      //   throw new Error("Each variation must have valid colorName, storage, price, discount, and stock.");
+      // }
+
+      if (
+  !colorName || 
+  !storage || 
+  typeof v.price !== "number" || 
+  typeof v.discountPercentage !== "number" || 
+  typeof v.stock !== "number" || 
+  v.price <= 0 || 
+  v.stock <= 0
+) {
+  throw new Error("Each variation must have valid colorName, storage, and positive numeric price, discount, and stock.");
+}
+
 
       if (v.discountPercentage < 0 || v.discountPercentage > 100) {
         throw new Error("Discount percentage must be between 0 and 100.");
@@ -423,6 +518,7 @@ const updateProductById = async (req, res) => {
 
       incomingMap.set(v._id ?? null, {
         _id: v._id,
+        colorName: v.colorName.trim(),
         storage: v.storage.trim(),
         price: v.price,
         stock: v.stock,
@@ -449,9 +545,11 @@ const updateProductById = async (req, res) => {
     for (let v of newVariations) {
       // avoid duplicate storage in updated list
       if (
-        updatedVariations.some((ex) => ex.storage.toLowerCase() === v.storage.toLowerCase())
+        updatedVariations.some((ex) => ex.storage.toLowerCase() === v.storage.toLowerCase()
+      &&
+      ex.colorName.toLowerCase() === v.colorName.toLowerCase())
       ) {
-        throw new Error(`Storage "${v.storage}" already exists.`);
+        throw new Error(`Variation with color "${v.colorName}" and storage "${v.storage}" already exists.`);
       }
 
       updatedVariations.push(v);

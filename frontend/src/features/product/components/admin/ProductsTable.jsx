@@ -144,13 +144,14 @@ export function ProductsTable({
                   <ul className="space-y-1">
                     {product.variations.map((variation, i) => (
                       <li key={i} className="text-xs">
-                        <strong>{variation.storage}</strong>: ${variation.priceAfterDiscount}  
+                        <strong>{variation.storage}</strong>:${variation.colorName} ${variation.priceAfterDiscount}  
                         (${variation.price},{variation.discountPercentage}% off, stock: {variation.stock})
                       </li>
                     ))}
                   </ul>
                 </td>
 
+                
                 <td className="p-3">{product.totalStock}</td>
                 <td className="p-3 font-semibold">${product.minPriceAfterDiscount}</td>
                 <td className="p-3 text-red-600 font-semibold">{product.maxDiscountPercentage}%</td>

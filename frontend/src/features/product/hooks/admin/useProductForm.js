@@ -19,7 +19,7 @@ const useProductForm = (initialData = null) => {
     imgUrl: "",
     category: "",
     colors: [{ colorName: "", imgUrl: "" }],
-    variations: [{ storage: "", stock: "", price: "", discountPercentage: "" }],
+    variations: [{ storage: "", stock: "", price: "", discountPercentage: "" ,colorName: ""}],
   });
 
   const [imgFile, setImgFile] = useState(null);
@@ -64,8 +64,9 @@ const useProductForm = (initialData = null) => {
             stock: v.stock,
             price: v.price,
             discountPercentage: v.discountPercentage,
+            colorName: v.colorName || "",
           }))
-            : [{ storage: "", stock: "", price: "", discountPercentage: "" }],
+            : [{ storage: "", stock: "", price: "", discountPercentage: "",colorName: "", }],
       });
 
       setImgPreview(initialData.imgUrl || null);
@@ -123,7 +124,7 @@ const useProductForm = (initialData = null) => {
       ...form,
       variations: [
         ...form.variations,
-        { storage: "", stock: "", price: "", discountPercentage: "" },
+        { storage: "", stock: "", price: "", discountPercentage: "",colorName: "" },
       ],
     });
   };
@@ -191,7 +192,7 @@ const useProductForm = (initialData = null) => {
         colors: [{ colorName: "", imgUrl: "" }],
 
         variations: [
-          { storage: "", stock: "", price: "", discountPercentage: "" },
+          { storage: "", stock: "", price: "", discountPercentage: "",colorName: "", },
         ],
       });
       setImgPreview(null);
@@ -225,7 +226,8 @@ const useProductForm = (initialData = null) => {
           const stock = Number(v.stock);
           return {
             _id: v._id,
-            storage: v.storage,
+            colorName: v.colorName.trim().toLowerCase(), 
+            storage: v.storage.trim(),
             stock,
             price,
             discountPercentage: discount,
@@ -256,11 +258,28 @@ const useProductForm = (initialData = null) => {
         resetForm();
       }
     } catch (err) {
-      if (err.response?.status === 409) {
-        alert(err.response.data.message || "Product already exists.");
-      } else {
-        alert(err.response?.data?.message || "Failed to submit product");
-      }
+      // if (err.response?.status === 409) {
+      //   alert(err.response.data.message || "Product already exists.");
+      // } else {
+      //   alert(err.response?.data?.message || "Failed to submit product");
+      // }
+
+      console.error("Submit error:", err);
+
+  let message = "Failed to submit product";
+
+  if (err.response) {
+    // ✅ Log to debug
+    console.error("Response data:", err.response.data);
+
+    if (err.response.data?.message) {
+      message = err.response.data.message;
+    } else if (err.response.status === 409) {
+      message = "Product already exists.";
+    }
+  }
+
+  alert(`Error: ${message}`);
     }
   };
 
