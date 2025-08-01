@@ -56,3 +56,58 @@ export const getCart = async()=>{
     throw error;
   }
 }
+
+export const updateCartItemQuantity  = async({
+    productId,
+  colorName,
+  storage,
+  quantity,
+})=>{
+  const token = getToken();
+  if (!token) throw new Error("Unauthorized: No token found");
+
+  try {
+    const response = await API.patch(
+      "/update",
+      { productId, colorName, storage, quantity },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      } 
+    )
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Failed to update cart item quantity:",
+      error.response?.data || error.message
+    );
+    throw error;
+  
+  }
+}
+
+export const removeCartItem  = async({
+  productId, colorName, storage
+})=>{
+  const token = getToken();
+  if (!token) throw new Error("Unauthorized: No token found");
+
+  try {
+    const response = await API.delete("/remove",{
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params:{productId, colorName, storage}
+    }
+    )
+    return response.data; 
+  } catch (error) {
+    console.error(
+      "Failed to remove cart item:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}

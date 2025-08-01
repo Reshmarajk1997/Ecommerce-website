@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom'; // if using react-router
+import { useParams} from 'react-router-dom'; // if using react-router
 import { fetchProductById } from '../../services/admin/productServices'; // create this function
 import useProductForm from '../../hooks/admin/useProductForm';
 import AddProductForm from '../../components/admin/AddProductForm';
+
+
+
 
 const EditProductPage = () => {
      console.log("EditProductPage mounted"); 

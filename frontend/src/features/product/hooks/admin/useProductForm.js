@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import debounce from "lodash.debounce";
 import {
   addProduct,
@@ -6,7 +7,11 @@ import {
   checkProductExists,
 } from "../../services/admin/productServices";
 
+
+
 const useProductForm = (initialData = null) => {
+  const navigate = useNavigate()
+  
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -252,17 +257,13 @@ const useProductForm = (initialData = null) => {
       if (productId) {
         await updateProductById(productId, formData);
         alert("Product updated successfully!");
+        navigate('/admin/products')
       } else {
         await addProduct(formData);
         alert("Product added successfully!");
         resetForm();
       }
     } catch (err) {
-      // if (err.response?.status === 409) {
-      //   alert(err.response.data.message || "Product already exists.");
-      // } else {
-      //   alert(err.response?.data?.message || "Failed to submit product");
-      // }
 
       console.error("Submit error:", err);
 

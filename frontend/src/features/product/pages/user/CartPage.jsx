@@ -6,11 +6,6 @@ import { useCart } from "../../hooks/user/useCart";
 
 const CartPage = () => {
   const {
-    // cartItems,
-    // removeFromCart,
-    // updateQuantity,
-    // getCartTotals,
-
         cartItems,
   loading,
   removeFromCart,
@@ -18,7 +13,7 @@ const CartPage = () => {
   totals,
   } = useCart();
 
-  // const { subtotal, shipping, tax, total } = getCartTotals();
+
   const { subTotal, shipping, tax, total } = totals;
 
 
@@ -26,16 +21,31 @@ const CartPage = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mt-10">
       <div className="md:col-span-2">
         <h2 className="text-2xl font-bold mb-4">Shopping Cart</h2>
-        {cartItems.map((item) => (
+        {/* {cartItems.map((item) => (
           <CartItem
             key={item._id}
             item={item}
             onQtyChange={updateQuantity}
             onRemove={removeFromCart}
           />
-        ))}
-      </div>
+        ))} */}
 
+        {(!cartItems || cartItems.length === 0) ? (
+  <p className="text-gray-600">Your cart is empty.</p>
+) : (
+  cartItems.map((item) => (
+    <CartItem
+      key={item._id}
+      item={item}
+      onQtyChange={updateQuantity}
+      onRemove={removeFromCart}
+    />
+  ))
+)}
+
+
+      </div>
+{cartItems && cartItems.length > 0 && (
       <div className="bg-gray-50 p-6 rounded shadow">
         <h3 className="text-lg font-semibold mb-4">Order summary</h3>
         <div className="space-y-2 text-sm">
@@ -60,7 +70,9 @@ const CartPage = () => {
           Checkout
         </button>
       </div>
+)}
     </div>
+    
   );
 };
 

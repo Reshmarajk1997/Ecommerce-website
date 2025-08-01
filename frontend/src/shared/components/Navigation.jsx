@@ -339,18 +339,18 @@ export default function Navigation() {
                 {!user?.isAdmin && (
                   <>
                     {/* Search */}
-                    <div className="flex lg:ml-6">
+                    {/* <div className="flex lg:ml-6">
                       <Link
                         to="/"
                         className="p-2 text-gray-400 hover:text-gray-500"
                       >
                         <MagnifyingGlassIcon className="size-6" />
                       </Link>
-                    </div>
+                    </div> */}
 
                     {/* Cart */}
                     <div className="ml-4 flow-root lg:ml-6">
-                      <Link to="/" className="group -m-2 flex items-center p-2">
+                      <Link to="/cart" className="group -m-2 flex items-center p-2">
                         <ShoppingBagIcon className="size-6 ..." />
                         ...
                       </Link>
