@@ -14,9 +14,9 @@ const router = express.Router();
 
 
 
-router.get('/', getAllProducts);
+router.get('/', authenticateToken,isUser,getAllProducts);
 
-router.get('/:id',getProductById);
+router.get('/:id',authenticateToken,isUser,getProductById);
 router.post('/:id/reviews',authenticateToken,isUser,addReview)
 router.get('/:id/reviews',authenticateToken,isUser,getProductReviews)
 

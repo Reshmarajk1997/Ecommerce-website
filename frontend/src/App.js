@@ -4,6 +4,7 @@ import { AuthProvider, AuthContext } from "./context/authContext";
 import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
 import Navigation from "./shared/components/Navigation";
+import Footer from "./shared/components/Footer";
 import HomePage from "./features/user/pages/HomePage";
 
 import { AdminPage } from "./features/admin/pages/AdminPage";
@@ -16,8 +17,10 @@ import UsersTablePage from './features/product/pages/admin/UsersTablePage';
 import ProductOverviewPage from './features/product/pages/user/ProductOverviewPage'
 import UserProductListPage from './features/product/pages/user/UserProductListPage'
 import CartPage from './features/product/pages/user/CartPage'
+// import CartPage from './features/payment/components/OrderSummary'
 
 import { Navigate } from "react-router-dom";
+import OrderSummary from "./features/payment/components/OrderSummary";
 
 function App() {
   console.log("App component is rendering...");
@@ -44,10 +47,12 @@ function App() {
             <Route path="product/:id" element={<ProductOverviewPage/>}/>
             <Route path="products" element={< UserProductListPage/>} />
             <Route path="/cart" element={< CartPage/>} />
+            <Route path="/order-summary" element={< OrderSummary/>} />
           </Route>
 
           {/* <Route path='/product/:id' element={<ProductOverview/>}/> */}
         </Routes>
+        <Footer/>
       </Router>
     </AuthProvider>
   );

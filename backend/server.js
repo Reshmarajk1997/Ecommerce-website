@@ -9,11 +9,15 @@ import authRoutes from "./routes/authRoutes.js"
 import adminProductRoutes from './routes/adminProductRoutes.js'
 import userProductRoutes from './routes/userProductRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
+import paymentRoutes from './routes/paymentRoutes.js'
+
 
 
 const app = express();
-app.use(express.json());
 app.use(cors())
+app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json());
+
 
 app.get('/', (req, res) => {
     res.send('Server is running!');
@@ -22,6 +26,7 @@ app.use('/api/auth',authRoutes)
 app.use('/api/products',userProductRoutes)
 app.use('/api/admin/products',adminProductRoutes)
 app.use('/api/cart',cartRoutes)
+app.use("/api/payment", paymentRoutes);
 
 connectDB();
 

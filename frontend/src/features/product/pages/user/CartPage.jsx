@@ -1,10 +1,17 @@
 // pages/CartPage.jsx
 import CartItem from "../../components/user/CartItem";
 import { useCart } from "../../hooks/user/useCart";
+import { useNavigate } from "react-router-dom";
 
 
 
 const CartPage = () => {
+
+  const navigate = useNavigate()
+   const handlePlaceOrder = () => {
+    navigate("/order-summary");
+  };
+
   const {
         cartItems,
   loading,
@@ -66,8 +73,9 @@ const CartPage = () => {
           <span>Order total</span>
           <span>${total.toFixed(2)}</span>
         </div>
-        <button className="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded">
-          Checkout
+        <button className="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded"
+        onClick={handlePlaceOrder}>
+          Place Order
         </button>
       </div>
 )}

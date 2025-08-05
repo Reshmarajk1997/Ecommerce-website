@@ -34,23 +34,28 @@ const CartItem = ({ item, onQtyChange, onRemove }) => {
             }
             className="border px-2 py-1 rounded"
           >
-            {Array.from({ length: item.stock }, (_, i) => i + 1).map((num) => (
-              <option key={num} value={num}>
-                {num}
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+              <option key={num} value={num} disabled={num > item.stock}>
+                {num > item.stock ? `${num} (Out of Stock)` : num}
               </option>
             ))}
-          </select>
 
-          {/* <button onClick={() => onRemove(item)} className="text-red-500">
-            ×
-          </button> */}
+            {/* Show user's current quantity if it's now more than stock */}
+            {item.quantity > item.stock && (
+              <option value={item.quantity}>
+                {item.quantity} (Out of Stock)
+              </option>
+            )}
+          </select>
         </div>
 
         <div className="mt-2 text-sm">
-          {item.stock > 0 ? (
-            <p className="text-green-600">✓ In stock</p>
+          {item.stock === 0 ? (
+            <p className="text-red-600">✗ Out of stock</p>
+          ) : item.quantity > item.stock ? (
+            <p className="text-red-600">✗ Only {item.stock} left in stock</p>
           ) : (
-            <p className="text-yellow-600">🕒 Ships in 3–4 weeks</p>
+            <p className="text-green-600">✓ In stock</p>
           )}
         </div>
       </div>

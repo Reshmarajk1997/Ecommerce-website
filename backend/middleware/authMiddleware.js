@@ -33,6 +33,7 @@ const isUser = async(req,res,next)=>{
       return res.status(403).json({ message: "Access restricted to regular users" });
     }
 
+       console.log("User email in isUser middleware:", user.email); // <-- debug here
      req.user = user;
 
     next();

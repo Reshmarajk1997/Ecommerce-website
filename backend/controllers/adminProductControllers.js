@@ -183,8 +183,8 @@ for (const key of colorImageKeys) {
       if (discount < 0 || discount > 100) {
         throw new Error(`Discount for variation at index ${idx} must be between 0 and 100.`)
       }
-      if (stock < 1 ) {
-        throw new Error(`stock for variation at index ${idx} must be greater than 0`)
+      if (stock <=0 ) {
+        throw new Error(`stock for variation at index ${idx} must be 0 or greater than 0`)
       }
 
         if (!allowedColorNames.includes(colorName.toLowerCase())) {
