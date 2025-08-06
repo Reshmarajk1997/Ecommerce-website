@@ -1,4 +1,4 @@
-// components/OrderSummary.jsx
+
 import { useCart } from "../../product/hooks/user/useCart";
 import { useStripeCheckout } from "../hooks/useStripeCheckout";
 
@@ -40,3 +40,7 @@ const OrderSummary = () => {
 };
 
 export default OrderSummary;
+
+
+
+

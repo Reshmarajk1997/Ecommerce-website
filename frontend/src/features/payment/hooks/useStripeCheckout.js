@@ -2,16 +2,13 @@ import { loadStripe } from "@stripe/stripe-js";
 import { createCheckoutSession } from "../services/paymentService";
 
 
+console.log("Stripe Key:", process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-
-
 
 if (!stripeKey) {
   console.error("Missing Stripe publishable key in env!");
 }
-
-
 
 const stripePromise = loadStripe(stripeKey);
 
@@ -20,9 +17,11 @@ export const useStripeCheckout = () => {
     try {
       const data = await createCheckoutSession();
 
+       console.log("Stripe Checkout Session ID:", data.id);
+
       const stripe = await stripePromise;
 
-         if (!stripe) {
+      if (!stripe) {
         console.error("❌ Stripe failed to initialize.");
         alert("Stripe failed to initialize.");
         return;

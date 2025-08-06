@@ -27,6 +27,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        
         <Navigation />
         <Routes>
           <Route path="/register" element={<RegisterPage />} />

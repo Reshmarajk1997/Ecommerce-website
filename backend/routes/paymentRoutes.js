@@ -8,6 +8,10 @@ const router = express.Router();
 
 
 router.post("/create-checkout-session", authenticateToken,isUser, createCheckoutSession);
-router.post("/webhook",express.raw({ type: 'application/json' }), authenticateToken,isUser,stripeWebhookHandler)
+router.post("/webhook",stripeWebhookHandler)
+// router.post("/webhook", (req, res) => {
+//   console.log("Webhook test route hit");
+//   res.status(200).send("Webhook received");
+// });
 
 export default router;
