@@ -148,8 +148,11 @@ const getCartItems  = async(req,res)=>{
     );
 
     const stock = variation ? variation.stock : 0;
-    const itemTotal = item.priceAfterDiscount * item.quantity;
-    subTotal += itemTotal;
+    const isInvalid = stock <= 0 || item.quantity > stock;
+    const itemTotal = isInvalid ? 0 : item.priceAfterDiscount * item.quantity;
+        if (!isInvalid) subTotal += itemTotal;
+    // const itemTotal = item.priceAfterDiscount * item.quantity;
+    // subTotal += itemTotal;
 
     return {
       ...item.toObject(),
@@ -158,6 +161,7 @@ const getCartItems  = async(req,res)=>{
        image: colorObj?.imgUrl || null,
         productName: product.name,
         brand: product.brand,
+        outOfStock: isInvalid,
     };
   })
 );

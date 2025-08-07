@@ -21,7 +21,17 @@ const UserSchema = mongoose.Schema({
     isAdmin:{
         type:Boolean,
         default:false
-    }
+    },
+    shippingAddress: {
+  fullName: { type: String },
+  phoneNumber: { type: String },
+  country: { type: String },
+  city: { type: String },
+  area: { type: String },
+  streetAddress: { type: String },
+  zipCode: { type: String },
+}
+
 })
 
 const User = mongoose.model("User",UserSchema)

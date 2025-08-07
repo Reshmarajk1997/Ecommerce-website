@@ -10,6 +10,7 @@ import adminProductRoutes from "./routes/adminProductRoutes.js";
 import userProductRoutes from "./routes/userProductRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import shippingAddressRoutes from "./routes/shippingAddressRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/products", userProductRoutes);
 app.use("/api/admin/products", adminProductRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/address", shippingAddressRoutes);
 app.use("/api/orders", orderRoutes);
 
 connectDB();

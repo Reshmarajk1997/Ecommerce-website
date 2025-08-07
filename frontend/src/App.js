@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/authContext";
+
+import Layout from "./shared/components/Layout";
 import LoginPage from "./features/auth/pages/LoginPage";
 import RegisterPage from "./features/auth/pages/RegisterPage";
 import Navigation from "./shared/components/Navigation";
@@ -17,6 +19,9 @@ import UsersTablePage from './features/product/pages/admin/UsersTablePage';
 import ProductOverviewPage from './features/product/pages/user/ProductOverviewPage'
 import UserProductListPage from './features/product/pages/user/UserProductListPage'
 import CartPage from './features/product/pages/user/CartPage'
+import PaymentSuccessPage from './features/payment/components/PaymentSuccessPage'
+import OrderHistoryPage from './features/orderHistory/components/OrderHistoryPage'
+import CheckoutAddressForm from './features/payment/components/CheckoutAddressForm'
 // import CartPage from './features/payment/components/OrderSummary'
 
 import { Navigate } from "react-router-dom";
@@ -27,8 +32,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        
-        <Navigation />
+        <Layout>
+        {/* <Navigation /> */}
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -49,11 +54,16 @@ function App() {
             <Route path="products" element={< UserProductListPage/>} />
             <Route path="/cart" element={< CartPage/>} />
             <Route path="/order-summary" element={< OrderSummary/>} />
+            <Route path="/order-summary" element={< OrderSummary/>} />
+            <Route path="/shipping-address" element={<CheckoutAddressForm />} />
+            <Route path="/orders" element={< OrderHistoryPage/>} />
           </Route>
 
           {/* <Route path='/product/:id' element={<ProductOverview/>}/> */}
         </Routes>
-        <Footer/>
+        
+        {/* <Footer/> */}
+       </Layout>
       </Router>
     </AuthProvider>
   );

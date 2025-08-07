@@ -87,7 +87,7 @@ const createCheckoutSession  = async (req,res)=>{
         line_items:filteredItems,
         mode:"payment",
         customer_email:req.user.email,
-        success_url:`${process.env.CLIENT_URL}/payment-success`,
+        success_url:`${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/cart`,
     })
 
@@ -215,8 +215,23 @@ const createCheckoutSession  = async (req,res)=>{
 };
 
 
+// In paymentController.js
+ const getStripeSession = async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    res.json(session);
+  } catch (error) {
+    res.status(500).json({ message: "Unable to fetch session" });
+  }
+};
+
+
+
 
 export {
     createCheckoutSession,
-    stripeWebhookHandler
+    stripeWebhookHandler,
+    getStripeSession
 }

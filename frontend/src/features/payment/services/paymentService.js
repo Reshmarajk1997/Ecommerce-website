@@ -27,3 +27,9 @@ export const createCheckoutSession  = async()=>{
     throw error;
       }
 }
+
+
+export const fetchStripeSession = async (sessionId) => {
+  const { data } = await API.get(`/session/${sessionId}`);
+  return data;
+};

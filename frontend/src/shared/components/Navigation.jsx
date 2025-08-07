@@ -39,8 +39,8 @@ const navigation = {
     },
   ],
   pages: [
-    { name: "Company", href: "#" },
-    { name: "Stores", href: "#" },
+    { name: "Orders", to: "/orders" },
+    { name: "Stores", to: "#" },
   ],
 };
 
@@ -102,6 +102,8 @@ export default function Navigation() {
                 <div className="border-b border-gray-200">
                   <TabList className="-mb-px flex space-x-8 px-4">
                     {navigation.categories.map((category) => (
+
+
                       <Tab
                         key={category.name}
                         onClick={() => {
@@ -141,7 +143,7 @@ export default function Navigation() {
                 navigation.pages.map((page) => (
                   <div key={page.name} className="flow-root">
                     <Link
-                      to={page.href}
+                      to={page.to}
                       onClick={() => setOpen(false)}
                       className="-m-2 block p-2 font-medium text-gray-900"
                     >
@@ -260,7 +262,7 @@ export default function Navigation() {
                       {navigation.pages.map((page) => (
                         <Link
                           key={page.name}
-                          to={page.href}
+                          to={page.to}
                           className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
                         >
                           {page.name}

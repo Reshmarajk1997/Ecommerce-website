@@ -5,6 +5,6 @@ const { authenticateToken, isUser } = authMiddleware;
 
 const router = express.Router();
 
-router.get("/orders", authenticateToken,isUser, getAllOrders);
+router.get("/", authenticateToken,isUser, getAllOrders);
 
 export default router;

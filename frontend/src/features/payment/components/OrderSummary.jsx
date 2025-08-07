@@ -9,9 +9,9 @@ const OrderSummary = () => {
   const { subTotal, shipping, tax, total } = totals;
 
   return (
-    <div className="bg-gray-50 p-6 rounded shadow">
-      <h3 className="text-lg font-semibold mb-4">Order summary</h3>
-      <div className="space-y-2 text-sm">
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 w-full max-w-md mx-auto mt-4">
+      <h3 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Order Summary</h3>
+        <div className="space-y-4 text-sm text-gray-700">
         <div className="flex justify-between">
           <span>Subtotal</span>
           <span>${subTotal.toFixed(2)}</span>
@@ -25,13 +25,16 @@ const OrderSummary = () => {
           <span>${tax.toFixed(2)}</span>
         </div>
       </div>
-      <div className="flex justify-between font-bold text-lg mt-4">
-        <span>Order total</span>
+     
+        <div className="flex justify-between items-center font-semibold text-lg text-gray-900 mt-6 border-t pt-4">
+        <span>Total</span>
         <span>${total.toFixed(2)}</span>
       </div>
       <button
         onClick={handleCheckout}
-        className="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded"
+
+        className="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white py-3 rounded-xl text-sm font-medium transition duration-200 shadow-md"
+      
       >
         Checkout
       </button>
